@@ -1,0 +1,19 @@
+[
+  {
+    "id": "P001",
+    "name": "Soap",
+    "unit_weight": 250,
+    "price_per_unit": 40
+  },
+  {
+    "id": "P002",
+    "name": "Biscuit",
+    "unit_weight": 120,
+    "price_per_unit": 20
+  },
+  {
+    "id": "P003",
+    "name": "Rice",
+    "price_per_gram": 0.05
+  }
+]
