@@ -1,6 +1,8 @@
-CONFIDENCE_THRESHOLD = 0.8
+CONFIDENCE_THRESHOLD = 0.5
 
 def handle_event(cart, product, event):
+    print(f"🔍 Event confidence: {event['confidence']}")
+
     if event["confidence"] < CONFIDENCE_THRESHOLD:
         print("⚠️ Low confidence event ignored")
         return

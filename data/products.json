@@ -1,19 +1,185 @@
 [
   {
     "id": "P001",
-    "name": "Soap",
+    "name": "Soap Blue",
+    "category": "toiletries",
     "unit_weight": 250,
-    "price_per_unit": 40
+    "price_per_unit": 40,
+    "vision_profile": { "dominant_color": "blue" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [0.7, 1.5],
+      "min_area_ratio": 0.12
+    }
   },
   {
     "id": "P002",
-    "name": "Biscuit",
-    "unit_weight": 120,
-    "price_per_unit": 20
+    "name": "Soap Green",
+    "category": "toiletries",
+    "unit_weight": 250,
+    "price_per_unit": 38,
+    "vision_profile": { "dominant_color": "green" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [0.7, 1.5],
+      "min_area_ratio": 0.12
+    }
   },
   {
     "id": "P003",
-    "name": "Rice",
-    "price_per_gram": 0.05
+    "name": "Biscuit Red",
+    "category": "snacks",
+    "unit_weight": 120,
+    "price_per_unit": 20,
+    "vision_profile": { "dominant_color": "red" },
+    "shape_profile": {
+      "form": "packet",
+      "aspect_ratio": [1.2, 3.5],
+      "min_area_ratio": 0.08
+    }
+  },
+  {
+    "id": "P004",
+    "name": "Biscuit Yellow",
+    "category": "snacks",
+    "unit_weight": 120,
+    "price_per_unit": 18,
+    "vision_profile": { "dominant_color": "yellow" },
+    "shape_profile": {
+      "form": "packet",
+      "aspect_ratio": [1.2, 3.5],
+      "min_area_ratio": 0.08
+    }
+  },
+  {
+    "id": "P005",
+    "name": "Chips Blue",
+    "category": "snacks",
+    "unit_weight": 52,
+    "price_per_unit": 20,
+    "vision_profile": { "dominant_color": "blue" },
+    "shape_profile": {
+      "form": "pouch",
+      "aspect_ratio": [1.3, 4.0],
+      "min_area_ratio": 0.07
+    }
+  },
+  {
+    "id": "P006",
+    "name": "Chips Orange",
+    "category": "snacks",
+    "unit_weight": 55,
+    "price_per_unit": 20,
+    "vision_profile": { "dominant_color": "orange" },
+    "shape_profile": {
+      "form": "pouch",
+      "aspect_ratio": [1.3, 4.0],
+      "min_area_ratio": 0.07
+    }
+  },
+  {
+    "id": "P007",
+    "name": "Rice Small",
+    "category": "grains",
+    "price_per_gram": 0.05,
+    "vision_profile": { "dominant_color": "white" },
+    "shape_profile": {
+      "form": "bag",
+      "aspect_ratio": [0.6, 1.4],
+      "min_area_ratio": 0.15
+    }
+  },
+  {
+    "id": "P008",
+    "name": "Rice Large",
+    "category": "grains",
+    "price_per_gram": 0.045,
+    "vision_profile": { "dominant_color": "white" },
+    "shape_profile": {
+      "form": "bag",
+      "aspect_ratio": [0.6, 1.4],
+      "min_area_ratio": 0.15
+    }
+  },
+  {
+    "id": "P009",
+    "name": "Juice Red",
+    "category": "beverages",
+    "unit_weight": 200,
+    "price_per_unit": 30,
+    "vision_profile": { "dominant_color": "red" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [0.4, 0.9],
+      "min_area_ratio": 0.10
+    }
+  },
+  {
+    "id": "P010",
+    "name": "Juice Green",
+    "category": "beverages",
+    "unit_weight": 200,
+    "price_per_unit": 30,
+    "vision_profile": { "dominant_color": "green" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [0.4, 0.9],
+      "min_area_ratio": 0.10
+    }
+  },
+  {
+    "id": "P011",
+    "name": "Milk Pack",
+    "category": "dairy",
+    "unit_weight": 500,
+    "price_per_unit": 28,
+    "vision_profile": { "dominant_color": "white" },
+    "shape_profile": {
+      "form": "pouch",
+      "aspect_ratio": [0.6, 1.8],
+      "min_area_ratio": 0.12
+    }
+  },
+  {
+    "id": "P012",
+    "name": "Butter Pack",
+    "category": "dairy",
+    "unit_weight": 100,
+    "price_per_unit": 55,
+    "vision_profile": { "dominant_color": "yellow" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [1.0, 2.5],
+      "min_area_ratio": 0.10
+    }
+  },
+  {
+    "id": "P013",
+    "name": "Santoor Soap",
+    "category": "toiletries",
+    "unit_weight": 125,
+    "price_per_unit": 40,
+    "vision_profile": { "dominant_color": "orange" },
+    "shape_profile": {
+      "form": "box",
+      "aspect_ratio": [0.7, 1.4],
+      "min_area_ratio": 0.12
+    }
+  },
+  {
+  "id": "P014",
+  "name": "Colgate Toothpaste",
+  "category": "toiletries",
+  "unit_weight": 120,
+  "price_per_unit": 55,
+  "vision_profile": {
+    "dominant_color": "red"
+  },
+  "shape_profile": {
+    "form": "box",
+    "aspect_ratio": [2.0, 4.5],
+    "min_area_ratio": 0.08
   }
+}
+
 ]
