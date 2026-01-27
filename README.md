@@ -1,126 +1,158 @@
-Excellent decision. That’s the **professional sequence**:
-**freeze → document → version control → then extend**.
 
-I’ll give you **(1) a clean README**, and **(2) exact git commands**.
-No fluff, no marketing lies — just honest, defensible documentation.
 
----
+# 🛒 Smart Cart System – Camera-Integrated Hybrid Demo
 
-# 1️⃣ README.md (copy–paste exactly)
+## Project Overview
 
-Create a file called **`README.md`** in the root of `smart_cart_system` and paste this:
+This project is a **Smart Cart System prototype** that demonstrates automated product addition and removal using a **hybrid sensing approach**.
 
-```markdown
-# Smart Cart System (Software MVP)
+The system integrates:
 
-## Overview
-This project is a **software-first Smart Cart / Smart Checkout system** developed as part of a college project.
+* **Real-time camera input** for visual feature extraction
+* **Weight-based resolution** (currently simulated) for deterministic product identification
+* **Live cart management** with automatic billing updates
 
-The system simulates an automated checkout process using:
-- Camera-based product identification (abstracted)
-- Weight-based add/remove detection
-- Event-driven cart and billing logic
-
-The current implementation is a **hardware-agnostic MVP**, designed so that real camera and sensor hardware can be integrated later without changing core logic.
+The goal of the project is to showcase **system design, sensor integration, and decision logic**, rather than full-scale commercial deployment.
 
 ---
 
-## Key Design Principles
-- Software is the single source of truth
-- Hardware inputs are abstracted as events
-- Camera suggests product identity
-- Weight sensor confirms add/remove actions
-- Cart and billing logic are independent of hardware
+## Key Features
+
+* 📷 **Real-time camera capture**
+* 🎨 Visual feature extraction (dominant color + coarse shape hints)
+* ⚖️ Weight-based product resolution (keyboard-simulated)
+* ➕ Automatic add to cart
+* ➖ Automatic removal from cart
+* 🧾 Live bill calculation
+* 🧠 Deterministic, explainable decision logic
+* 🔌 Architecture ready for real hardware integration
 
 ---
 
-## Current Features (MVP)
-- Event-driven cart system
-- Product catalog loaded from JSON
-- Unit-based and weight-based pricing
-- Camera stub with confidence handling
-- Weight-based product removal inference
-- Receipt-style terminal output
-- Fully runnable without any hardware
+## System Architecture
 
----
-
-## Project Structure
+```
+Camera
+  ↓
+Visual Feature Extraction
+  ↓
+Category Hint (NOT final decision)
+  ↓
+Weight Input (Simulated / Sensor-ready)
+  ↓
+Product Resolution
+  ↓
+Cart Update & Billing
 ```
 
-smart_cart_system/
-│
-├── main.py
-│
-├── models/
-│   ├── product.py
-│   ├── cart_item.py
-│   └── cart.py
-│
-├── services/
-│   ├── simulator.py
-│   ├── event_handler.py
-│   ├── product_loader.py
-│   └── camera_stub.py
-│
-└── data/
-└── products.json
+### Design Principle
 
-````
+> **Vision is used as a hint, weight is the final authority.**
+
+This avoids incorrect billing when products share similar visual characteristics.
 
 ---
 
-## How the System Works (High Level)
-1. A product is placed in the cart
-2. Weight change triggers software logic
-3. Camera module identifies the product (currently simulated)
-4. Cart state is updated
-5. Bill is recalculated and displayed
-6. Product removal is inferred using weight difference
+## Technologies Used
+
+* **Language:** Python
+* **Computer Vision:** OpenCV
+* **Architecture:** Modular, service-based design
+* **Input Devices:**
+
+  * Camera (real)
+  * Weight sensor (simulated via keyboard input)
 
 ---
 
-## How to Run (No Hardware Required)
-### Prerequisites
-- Python 3.9+
+## Product Identification Logic
 
-### Steps
-```bash
-cd smart_cart_system
-python main.py
-````
+1. **Camera captures image**
+2. **Visual features extracted**
 
-The system will simulate:
+   * Dominant color
+   * Coarse shape metrics (aspect ratio, area)
+3. **Possible product categories are inferred**
+4. **Weight change is read**
+5. **Product is resolved by matching weight**
+6. **Cart is updated safely**
 
-* Product additions via camera stub
-* Product removal via weight change
-* Live cart and billing output
+If confidence is low or ambiguity exists, the system **rejects the event instead of guessing**.
 
 ---
 
-## Current Limitations
+## Weight Simulation (Current Demo Mode)
 
-* Camera detection is simulated (no OpenCV yet)
-* No real sensor or Arduino integration
-* Terminal-based UI only
+For demonstration and testing, the weight sensor is simulated via **keyboard input**.
 
-These are intentional for MVP stability.
+### Example Inputs
 
----
+* `125` → Add Santoor Soap
+* `120` → Add Colgate Toothpaste
+* `-125` → Remove Santoor Soap
+* `q` → End demo
 
-## Future Work
-
-* Replace camera stub with real webcam capture (OpenCV)
-* Integrate real weight sensor via Arduino
-* Improve confidence-based decision logic
-* Add persistent transaction storage
-* Optional GUI
+This simulation layer is abstracted and can be replaced with a **real load cell sensor** without changing core logic.
 
 ---
 
-## Academic Note
+## Why Not Vision-Only or ML?
 
-This project prioritizes **system design, clarity, and robustness** over hardware complexity.
-The MVP demonstrates the complete logical flow of an automated checkout system.
+* Product appearance varies widely across brands
+* Color and shape are not unique identifiers
+* Vision-only systems are prone to misclassification
 
-````
+### Engineering Decision
+
+> **Weight provides deterministic identification, vision provides context.**
+
+This design reflects **real-world smart retail systems**, prioritizing correctness over guessing.
+
+---
+
+## Limitations
+
+* Weight sensor is currently simulated
+* Products with identical weights cannot be distinguished without additional identifiers (e.g., barcode or RFID)
+* Shape detection is coarse and used only as a secondary constraint
+* System is designed for controlled demo environments
+
+These limitations are **intentional and acknowledged**.
+
+---
+
+## Future Enhancements
+
+* Integration with real load cell hardware
+* Barcode / QR code scanning for SKU-level identification
+* Improved object segmentation
+* Optional ML-based category classification
+* UI-based cart display
+
+---
+
+## Demo Readiness
+
+The system is **demo-stable**, deterministic, and explainable.
+
+It is designed to:
+
+* Never add a wrong product
+* Reject uncertain events safely
+* Clearly demonstrate system logic
+
+---
+
+## Author Notes
+
+This project focuses on **engineering trade-offs, modular design, and reliability**, rather than attempting to solve large-scale retail automation with limited data.
+
+---
+
+## License
+
+Academic / Educational Use
+
+---
+
+
