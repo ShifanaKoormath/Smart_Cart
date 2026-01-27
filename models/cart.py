@@ -39,6 +39,7 @@ class Cart:
                 del self.items[closest_item.product.id]
             else:
                 closest_item.update_subtotal()
+        return closest_item.product.name
 
     def total(self):
         return sum(item.subtotal for item in self.items.values())

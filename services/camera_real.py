@@ -56,7 +56,7 @@ def capture_and_detect():
     confidence = compute_confidence(s_val, v_val)
     aspect_ratio, area_ratio = extract_shape_features(crop)
 
-    return detected_color, confidence, aspect_ratio, area_ratio
+    return detected_color, confidence, aspect_ratio, area_ratio, crop
 
 
 def classify_color(h, s, v):

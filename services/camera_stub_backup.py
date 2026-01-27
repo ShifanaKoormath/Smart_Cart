@@ -2,6 +2,8 @@ import random
 
 # Fake camera + detection logic
 def capture_and_detect():
+    app.refresh_camera()
+
     """
     Simulates camera image capture and product detection.
     Returns (product_id, confidence)
