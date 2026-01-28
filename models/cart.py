@@ -62,3 +62,8 @@ class Cart:
         print("--------------------------")
         print(f"TOTAL: ₹{self.total():.2f}")
         print("--------------------------\n")
+    def reset(self):
+        """
+        Clears the cart for a new session.
+        """
+        self.items.clear()

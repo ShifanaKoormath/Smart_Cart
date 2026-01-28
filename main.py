@@ -1,3 +1,5 @@
+import time
+
 from models.cart import Cart
 from services.simulator import simulate_event
 from services.event_handler import handle_event
@@ -8,92 +10,143 @@ from services.vision_mapper import map_color_to_categories
 from services.weight_provider import WeightProvider
 from ui.smart_cart_ui import SmartCartUI
 
-# Load product catalog
+
+# ---------------- STABILIZATION ----------------
+def wait_for_weight_stabilization():
+    """
+    Simulates load cell stabilization time.
+    In real system: checks variance of readings.
+    """
+    print("⏳ Waiting for weight to stabilize...")
+    time.sleep(1.5)
+
+
+# ---------------- LOAD SYSTEM ----------------
 products = load_products()
 cart = Cart()
-ui = SmartCartUI(cart)
-
 weight_provider = WeightProvider(use_keyboard=True)
 
-print("\n=== SMART CART DEMO START ===\n")
+running = True
 
-# -------- ADD FLOW --------
-for i in range(3):
-    print(f"\n[EVENT {i+1}] Camera scan")
 
+def shutdown_backend():
+    """
+    Called by UI (End Demo / Exit Gate success).
+    """
+    global running
+    running = False
+    print("🛑 Shutdown signal received from UI")
+
+
+ui = SmartCartUI(cart, on_shutdown=shutdown_backend)
+
+
+# ---------------- PIPELINE STEP ----------------
+def pipeline_step():
+    global running
+
+    if not running:
+        print("🔚 Backend shutdown complete")
+        return
+
+    try:
+        if not running:
+            return
+        # 1️⃣ Weight trigger
+        weight_delta = weight_provider.get_next_weight()
+    except StopIteration:
+        print("🔚 Weight input ended")
+        return
+
+    # 2️⃣ Noise filter
+    if abs(weight_delta) < 5:
+        print("⚠️ Noise ignored")
+        ui.after(150, pipeline_step)
+        return
+
+    # 3️⃣ Stabilization
+    wait_for_weight_stabilization()
+
+    # 4️⃣ Event type
+    event_type = "ADD" if weight_delta > 0 else "REMOVE"
+
+    # 5️⃣ Camera capture
     detected_color, vision_conf, aspect_ratio, area_ratio, frame = capture_and_detect()
     ui.update_frame(frame)
 
-    print(f"Shape: aspect={aspect_ratio}, area={area_ratio}")
-
+    # 6️⃣ Vision reject
     if detected_color is None or vision_conf < 0.3:
-        print("❌ Vision unreliable, event rejected")
+        print("❌ Vision unreliable")
         ui.update_event("REJECT", vision_conf)
         ui.refresh()
-        continue
+        ui.after(200, pipeline_step)
+        return
 
     candidate_categories = map_color_to_categories(detected_color)
-
     if not candidate_categories:
         print("❌ No matching category")
         ui.update_event("REJECT", vision_conf)
         ui.refresh()
-        continue
+        ui.after(200, pipeline_step)
+        return
 
-    try:
-        simulated_weight = weight_provider.get_next_weight()
-    except StopIteration:
-        print("🔚 Weight input ended")
-        break
+    # ---------------- ADD FLOW ----------------
+    if event_type == "ADD":
+        product = resolve_product_by_weight(
+            products,
+            candidate_categories,
+            weight_delta,
+            aspect_ratio,
+            area_ratio
+        )
 
-    product = resolve_product_by_weight(
-        products,
-        candidate_categories,
-        simulated_weight,
-        aspect_ratio,
-        area_ratio
-    )
+        if not product:
+            print("⚠️ Weight mismatch")
+            ui.update_event("REJECT", vision_conf)
+            ui.refresh()
+            ui.after(200, pipeline_step)
+            return
 
-    if not product:
-        print("⚠️ Weight mismatch, product not resolved")
-        ui.update_event("REJECT", vision_conf)
+        if ui.view_mode != "CART":
+            ui.after(200, pipeline_step)
+            return
+
+        event = simulate_event(
+            event_type="ADD",
+            product_id=product.id,
+            weight_delta=weight_delta,
+            confidence=vision_conf
+        )
+
+        handle_event(cart, product, event)
+        ui.update_event("ADD", vision_conf, product.name)
         ui.refresh()
-        continue
 
-    event = simulate_event(
-        event_type="ADD",
-        product_id=product.id,
-        weight_delta=simulated_weight,
-        confidence=vision_conf
-    )
+    # ---------------- REMOVE FLOW ----------------
+    else:
+        if ui.view_mode != "CART":
+            ui.after(200, pipeline_step)
+            return
 
-    handle_event(cart, product, event)
-    ui.update_event(
-        "ADD",
-        event["confidence"],
-        product_name=product.name
-    )
-    ui.refresh()
+        event = simulate_event(
+            event_type="REMOVE",
+            product_id=None,
+            weight_delta=weight_delta,
+            confidence=vision_conf
+        )
 
-# -------- REMOVE FLOW --------
-print("\n[EVENT 4] Product removed from cart")
+        handle_event(cart, None, event)
+        ui.update_event("REMOVE", vision_conf, "item")
+        ui.refresh()
 
-remove_event = simulate_event(
-    event_type="REMOVE",
-    product_id=None,
-    weight_delta=-120,
-    confidence=0.95
-)
+    # 7️⃣ Schedule next cycle
+    ui.after(200, pipeline_step)
 
-handle_event(cart, None, remove_event)
-ui.update_event(
-    "REMOVE",
-    remove_event["confidence"],
-    product_name="item"
-)
-ui.refresh()
+
+# ---------------- START SYSTEM ----------------
+print("\n=== SMART CART PIPELINE MODE START ===\n")
+
+ui.after(500, pipeline_step)
+ui.mainloop()
 
 print("\n=== DEMO END ===")
-
-ui.show_final_bill()
-ui.mainloop()
