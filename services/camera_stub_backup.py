@@ -17,3 +17,4 @@ def capture_and_detect():
     ]
 
     return random.choice(detected_products)
+print(f"Vision result → color: {detected_color}, confidence: {vision_conf:.2f}")

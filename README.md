@@ -107,10 +107,6 @@ smart_cart_system/
 ---
 
 
-Got it. You want a **hands-on, instruction-style prerequisites section**, not descriptive text.
-Below is a **drop-in README section** written exactly like a setup guide a client or examiner would follow.
-
-No fluff. No assumptions.
 
 ---
 

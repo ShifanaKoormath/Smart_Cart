@@ -194,12 +194,22 @@ class SmartCartUI(tk.Tk):
       
     # ---------------- BACKEND → UI HOOKS ----------------
     def update_event(self, action, confidence=None, product_name=None):
+
         if action == "ADD" and product_name:
             text, color = f"Added {product_name}", ACCENT
+
         elif action == "REMOVE" and product_name:
             text, color = f"Removed {product_name}", WARN
+
+        elif action == "REJECT_VISION":
+            text, color = "Rejected (vision unreliable)", ERROR
+
+        elif action == "REJECT_MATCH":
+            text, color = "Rejected (no product match)", ERROR
+
         elif action == "REJECT":
-            text, color = "Rejected (low confidence)", ERROR
+            text, color = "Rejected", ERROR
+
         else:
             text, color = action, FG_COLOR
 
@@ -208,7 +218,7 @@ class SmartCartUI(tk.Tk):
         if confidence is not None:
             self.conf_label.config(text=f"Confidence: {confidence:.2f}")
         else:
-            self.conf_label.config(text="Confidence: -")
+            self.conf_label.config(text="Confidence: -")            
 
     def update_frame(self, frame):
         if frame is None:

@@ -5,33 +5,34 @@ import time
 
 def capture_and_detect():
     """
-    Captures an image from webcam, extracts dominant color
-    using filtered HSV pixels.
-    Returns (detected_color, confidence)
+    Captures an image from webcam and extracts the top 2 dominant colors.
+
+    Returns:
+    detected_colors, confidence, aspect_ratio, area_ratio, cropped_frame
     """
 
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
         print("❌ Camera not accessible")
-        return None, 0.0
+        return None, 0.0, None, None, None
 
     # Camera warm-up
-    time.sleep(1)
+    time.sleep(0.8)
 
     ret, frame = cap.read()
     cap.release()
 
     if not ret:
         print("❌ Failed to capture image")
-        return None, 0.0
+        return None, 0.0, None, None, None
 
     h, w, _ = frame.shape
 
-    # ---- CENTER CROP (fixed region) ----
+    # ---- CENTER CROP (reduce background noise) ----
     crop = frame[
-        int(h * 0.25):int(h * 0.75),
-        int(w * 0.25):int(w * 0.75)
+        int(h * 0.35):int(h * 0.65),
+        int(w * 0.35):int(w * 0.65)
     ]
 
     cv2.imwrite("last_capture.jpg", crop)
@@ -41,72 +42,92 @@ def capture_and_detect():
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
 
     # ---- FILTER PIXELS ----
-    # Ignore white text, dark regions, background noise
-    mask = (hsv[:, :, 1] > 50) & (hsv[:, :, 2] > 80)
+    mask = (hsv[:, :, 1] > 30) & (hsv[:, :, 2] > 70)
     filtered_pixels = hsv[mask]
 
-    # If too few useful pixels, reject
-    if len(filtered_pixels) < 100:
-        return None, 0.0
+    if len(filtered_pixels) < 80:
+        return None, 0.0, None, None, crop
 
-    # Compute average HSV of filtered pixels
-    h_val, s_val, v_val = np.mean(filtered_pixels, axis=0)
+    # -----------------------------
+    # DOMINANT COLOR CLUSTERS
+    # -----------------------------
+    hues = filtered_pixels[:, 0]
 
-    detected_color = classify_color(h_val, s_val, v_val)
+    hist, bins = np.histogram(hues, bins=18, range=(0, 180))
+
+    # pick top 2 bins
+    top_bins = hist.argsort()[-2:][::-1]
+
+    detected_colors = []
+
+    s_val = np.median(filtered_pixels[:, 1])
+    v_val = np.median(filtered_pixels[:, 2])
+
+    for b in top_bins:
+
+        h_val = (bins[b] + bins[b + 1]) / 2
+
+        color = classify_color(h_val, s_val, v_val)
+
+        if color and color not in detected_colors:
+            detected_colors.append(color)
+
     confidence = compute_confidence(s_val, v_val)
-    aspect_ratio, area_ratio = extract_shape_features(crop)
 
-    return detected_color, confidence, aspect_ratio, area_ratio, crop
+    aspect_ratio, area_ratio, bbox = extract_shape_features(crop)
+    
+    print(f"🎨 Detected dominant colors: {detected_colors}")
+
+    return detected_colors, confidence, aspect_ratio, area_ratio, crop
 
 
 def classify_color(h, s, v):
     """
-    Coarse HSV-based color classification.
-    Brown / dark colors are treated as ambiguous.
+    Coarse HSV color classification.
     """
 
-    # Too dark
     if v < 50:
-        return None
+        return "black"
 
-    # Brown / dark orange → ambiguous (reject)
-    if (10 <= h <= 40) and v < 120:
-        return None
-
-    # White / very light packaging
-    if s < 40 and v > 150:
+    if s < 35 and v > 160:
         return "white"
 
-    # Hue-based classification
-    if h < 10 or h > 160:
+    if h < 10 or h > 170:
         return "red"
-    elif 10 <= h < 35:
+    elif 10 <= h < 30:
         return "orange"
-    elif 35 <= h < 45:
+    elif 30 <= h < 50:
         return "yellow"
-    elif 45 <= h < 85:
+    elif 50 <= h < 85:
         return "green"
-    elif 85 <= h < 130:
+    elif 85 <= h < 140:
         return "blue"
+    elif 140 <= h < 170:
+        return "purple"
 
     return None
+
+
 def extract_shape_features(crop):
     """
-    Extract very basic shape features from the cropped image.
-    Returns aspect_ratio and area_ratio.
+    Extract shape features using edge detection.
+    Returns:
+    aspect_ratio, area_ratio, bbox
     """
 
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+
+    edges = cv2.Canny(gray, 50, 150)
 
     contours, _ = cv2.findContours(
-        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
 
     if not contours:
-        return None, None
+        return None, None, None
 
     largest = max(contours, key=cv2.contourArea)
+
     x, y, w, h = cv2.boundingRect(largest)
 
     crop_area = crop.shape[0] * crop.shape[1]
@@ -115,13 +136,15 @@ def extract_shape_features(crop):
     aspect_ratio = w / h if h != 0 else 0
     area_ratio = object_area / crop_area
 
-    return aspect_ratio, area_ratio
+    bbox = (x, y, w, h)
 
+    return aspect_ratio, area_ratio, bbox
 
 def compute_confidence(s, v):
     """
-    Confidence based on saturation and brightness.
-    Slight boost added for indoor lighting calibration.
+    Confidence estimation.
     """
-    confidence = (s / 255 + v / 255) / 2 + 0.15
-    return round(min(1.0, confidence), 2)
+
+    confidence = ((s / 255) * 0.6 + (v / 255) * 0.4) + 0.2
+
+    return round(min(confidence, 1.0), 2)

@@ -14,7 +14,8 @@ def load_products(path="data/products.json"):
             unit_weight=p.get("unit_weight"),
             price_per_unit=p.get("price_per_unit"),
             price_per_gram=p.get("price_per_gram"),
-            vision_profile=p.get("vision_profile")
+            vision_profile=p.get("vision_profile"),
+            shape_profile=p.get("shape_profile")
         )
         products[product.id] = product
 

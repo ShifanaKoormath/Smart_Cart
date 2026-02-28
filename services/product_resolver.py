@@ -2,36 +2,51 @@ def resolve_product_by_weight(
     products,
     candidate_categories,
     weight_delta,
+    detected_colors,
     aspect_ratio=None,
-    area_ratio=None,
-    tolerance=20
+    area_ratio=None
 ):
     target = abs(weight_delta)
-    best_match = None
-    min_diff = float("inf")
+    tolerance = 5  # small tolerance for demo stability
 
+    best_product = None
+    smallest_diff = float("inf")
+
+    # -------- PRIMARY SEARCH (category + color + weight) --------
     for product in products.values():
+
         if product.category not in candidate_categories:
             continue
 
         if product.unit_weight is None:
             continue
 
-        # ---- SHAPE FILTER (soft) ----
-        shape = product.shape_profile
-        if shape and aspect_ratio and area_ratio:
-            ar_min, ar_max = shape.get("aspect_ratio", (0, 10))
-            min_area = shape.get("min_area_ratio", 0)
+        # palette check
+        palette = product.vision_profile.get("dominant_colors", [])
 
-            if not (ar_min <= aspect_ratio <= ar_max):
-                continue
-            if area_ratio < min_area:
-                continue
+        if not any(c in palette for c in detected_colors):
+            continue
 
         diff = abs(product.unit_weight - target)
 
-        if diff < min_diff and diff <= tolerance:
-            min_diff = diff
-            best_match = product
+        if diff <= tolerance and diff < smallest_diff:
+            smallest_diff = diff
+            best_product = product
 
-    return best_match
+    # -------- FALLBACK SEARCH (ignore color but keep category) --------
+    if best_product is None:
+
+        print("⚠️ Color mismatch — trying category + weight fallback")
+
+        for product in products.values():
+
+            if product.category not in candidate_categories:
+                continue
+
+            diff = abs(product.unit_weight - target)
+
+            if diff <= tolerance and diff < smallest_diff:
+                smallest_diff = diff
+                best_product = product
+
+    return best_product
