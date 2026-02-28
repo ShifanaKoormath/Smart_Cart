@@ -1,5 +1,4 @@
 
----
 
 # 🛒 Smart Cart System (Demo Prototype)
 
@@ -9,61 +8,134 @@ The **Smart Cart System** is a **demo-focused prototype** that simulates how a s
 
 This project is **not a production system**. It is designed for:
 
-* Academic demonstration
+* Academic demonstrations
 * Concept validation
 * Architecture and workflow explanation
 
-The system prioritizes **deterministic behavior, explainability, and demo safety**.
+The system prioritizes:
+
+```
+Deterministic behavior
+Explainable logic
+Demo reliability
+```
 
 ---
 
-## 🎯 Key Capabilities
+# 🎯 Key Capabilities
 
-* 📷 **Real camera integration** (OpenCV)
-* ⚖️ **Weight-based product identification (authoritative)**
-* 🎨 **Vision-based hints** (dominant color + coarse shape)
-* 🧾 **Real-time cart billing**
-* 💳 **Payment simulation using QR code**
-* 🚪 **Exit gate verification (paid vs unpaid detection)**
-* 🔁 **Session reset for next customer**
-* 🖥️ **On-cart UI display (Tkinter)**
-
----
-
-## 🧠 Core Design Philosophy
-
-* **Weight is the source of truth**
-  Vision is used only as a *hint* to reduce ambiguity.
-
-* **No ML-based product recognition**
-  Ensures explainability and avoids misclassification.
-
-* **Backend is authoritative**
-  UI never makes business decisions.
-
-* **Payment and exit verification are mandatory**
-  Prevents unpaid exits.
+* 📷 **Camera-based product observation (OpenCV)**
+* ⚖️ **Weight-based product identification (authoritative signal)**
+* 🎨 **Vision hints using dominant color detection**
+* 🧠 **Color palette verification against product catalog**
+* 🧾 **Real-time cart updates and billing**
+* 💳 **QR-based payment simulation**
+* 🚪 **Exit gate verification**
+* 🔁 **Session reset for new customer**
+* 🖥️ **Interactive cart UI (Tkinter)**
 
 ---
 
-## 🔄 System Workflow
+# 🧠 Core Design Philosophy
+
+The system intentionally follows a **deterministic hybrid approach**.
+
+### Weight = Source of Truth
+
+```
+Weight change
+↓
+Product resolution
+↓
+Cart update
+```
+
+Weight sensors are the most reliable signal in retail environments.
+
+---
+
+### Vision = Contextual Hint
+
+Vision is used only to **narrow possible product categories**, not to directly identify products.
+
+Extracted hints include:
+
+* Dominant colors (top 2)
+* Coarse shape features
+
+This prevents unreliable computer vision from causing misidentification.
+
+---
+
+### Backend Authority
+
+The **backend logic controls all decisions**.
+
+The UI is **display-only** and cannot modify:
+
+* product resolution
+* billing logic
+* cart state
+* payment state
+
+---
+
+### Payment Enforcement
+
+The system prevents unpaid exit by verifying:
+
+```
+Cart total
+↓
+Payment status
+↓
+Exit gate unlock
+```
+
+---
+
+# 🔄 System Workflow
 
 ```
 Weight Change Detected
- → Weight Stabilization
- → Camera Capture
- → Vision Hint Extraction (color + shape)
- → Product Resolution using Weight
- → Cart Update (Add / Remove)
- → Billing
- → Payment (QR-based simulation)
- → Exit Gate Verification
- → New Cart / Session Reset
+        │
+        ▼
+Weight Stabilization
+        │
+        ▼
+Camera Frame Capture
+        │
+        ▼
+Vision Hint Extraction
+  • dominant colors
+  • coarse shape
+        │
+        ▼
+Color → Category Mapping
+        │
+        ▼
+Product Resolution
+(weight + vision hints)
+        │
+        ▼
+Cart Update
+        │
+        ▼
+Billing
+        │
+        ▼
+QR Payment Simulation
+        │
+        ▼
+Exit Gate Verification
+        │
+        ▼
+Session Reset
 ```
 
 ---
 
-## 🧩 Technology Stack
+# 🧩 Technology Stack
 
 | Component          | Technology                        |
 | ------------------ | --------------------------------- |
@@ -71,31 +143,32 @@ Weight Change Detected
 | UI                 | Tkinter                           |
 | Vision             | OpenCV                            |
 | QR Code            | qrcode + Pillow                   |
-| Backend            | Custom Python services            |
-| Hardware (planned) | Load Cell + HX711 + Arduino/ESP32 |
+| Data               | JSON catalog                      |
+| Backend            | Python services                   |
+| Hardware (planned) | Load Cell + HX711 + ESP32/Arduino |
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
 ```
 smart_cart_system/
 │
-├── main.py                     # Entry point
+├── main.py                     # System pipeline entry point
 │
 ├── models/
-│   ├── product.py              # Product model
+│   ├── product.py              # Product data model
 │   ├── cart.py                 # Cart & CartItem logic
 │
 ├── services/
 │   ├── camera_real.py          # Camera capture & vision hints
-│   ├── weight_provider.py      # Weight input abstraction
-│   ├── product_resolver.py     # Weight + vision resolution
+│   ├── weight_provider.py      # Weight simulation / hardware abstraction
+│   ├── product_resolver.py     # Product resolution logic
 │   ├── event_handler.py        # Add / remove logic
 │   ├── vision_mapper.py        # Color → category mapping
 │
 ├── ui/
-│   └── smart_cart_ui.py        # On-cart UI (Tkinter)
+│   └── smart_cart_ui.py        # On-cart display UI
 │
 ├── data/
 │   └── products.json           # Product catalog
@@ -106,82 +179,53 @@ smart_cart_system/
 
 ---
 
+# 🔧 Prerequisites
 
+## 1️⃣ Python
 
----
-
-## 🔧 Prerequisites (Check & Install)
-
-Follow these steps **before** setting up the project.
-
----
-
-### 1️⃣ Check Python Installation
-
-Run:
+Check installation:
 
 ```bash
 python --version
 ```
 
-or:
+Required:
 
-```bash
-python3 --version
+```
+Python 3.9+
 ```
 
-✅ Required: **Python 3.9 or higher**
+Download if needed:
 
-#### ❌ If Python is NOT installed
+[https://www.python.org/downloads/](https://www.python.org/downloads/)
 
-* Download from: [https://www.python.org/downloads/](https://www.python.org/downloads/)
-* During installation:
+During installation enable:
 
-  * ✔️ Check **“Add Python to PATH”**
-  * ✔️ Complete installation
-
-Verify again:
-
-```bash
-python --version
+```
+✔ Add Python to PATH
 ```
 
 ---
 
-### 2️⃣ Check pip Installation
+## 2️⃣ pip
 
-Run:
+Check pip:
 
 ```bash
 pip --version
 ```
 
-or:
-
-```bash
-pip3 --version
-```
-
-#### ❌ If pip is missing
-
-Run:
+If missing:
 
 ```bash
 python -m ensurepip --upgrade
 ```
 
-Then verify:
-
-```bash
-pip --version
-```
-
 ---
 
-### 3️⃣ Check Camera Availability
+## 3️⃣ Camera Availability
 
-* Ensure a webcam is connected
-* Close applications that may use the camera (Zoom, Teams, browser, etc.)
+Ensure a webcam is connected.
 
 Optional test:
 
@@ -194,29 +238,23 @@ cap.release()
 EOF
 ```
 
-
-
 ---
 
-### ⚠️ Notes
+⚠️ Notes
 
-* No internet connection required after installation
+* Internet connection **not required after setup**
 * No machine learning models required
-* Hardware weight sensor is **simulated via keyboard input** for demo
+* Weight sensor currently **simulated via keyboard input**
 
 ---
 
+# ⚙️ Setup Instructions
 
+Open VS Code → Open Project → Open Terminal.
 
-## ⚙️ Setup Instructions
+---
 
-
-Open VS Code
-Open Project directory
-Open View -> terminal and run commands below one by one.
-
-
-### 1️⃣ Clone the Repository
+## 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/ShifanaKoormath/Smart_Cart.git
@@ -225,141 +263,272 @@ cd smart_cart_system
 
 ---
 
-### 2️⃣ Create Virtual Environment (Recommended)
+## 2️⃣ Create Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-**Activate it:**
+Activate:
 
-* Windows:
+### Windows
 
-```bash
+```
 venv\Scripts\activate
 ```
 
-* macOS / Linux:
+### macOS / Linux
 
-```bash
+```
 source venv/bin/activate
 ```
 
 ---
 
-### 3️⃣ Install Dependencies
+## 3️⃣ Install Dependencies
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
-**Required packages include:**
+Key packages:
 
-* opencv-python
-* pillow
-* qrcode
-* numpy
+```
+opencv-python
+numpy
+pillow
+qrcode
+```
 
 ---
 
-### 4️⃣ Run the Project
+## 4️⃣ Run the System
 
-```bash
+```
 python main.py
 ```
 
 ---
 
-## 🎮 How to Use (Demo Mode)
+# 🎮 Demo Mode Usage
 
-### 🛍️ Shopping
+## 🛍️ Adding Products
 
+The system prompts for **weight change input**.
 
-* You will be prompted to **enter weight changes manually**:
-
-  * Positive value → product added
-  * Negative value → product removed
-* The camera captures the product image.(place product steadily before camera)
+```
+Positive weight → add product
+Negative weight → remove product
+```
 
 Example:
 
 ```
-125   → add product of ~125g
--120  → remove product of ~120g
+125
+```
+
+Adds a product close to **125g**.
+
+Example:
+
+```
+-120
+```
+
+Removes a **120g product**.
+
+---
+
+## 📷 Camera Interaction
+
+When entering weight:
+
+1. Hold product in front of camera
+2. Wait for capture
+3. Vision hints are extracted
+
+Detected features include:
+
+```
+dominant colors
+aspect ratio
+area ratio
 ```
 
 ---
 
-### 🧾 Billing
+## 🧾 Billing
 
-* Click **“Proceed to Bill”** in the UI.
-* Review the final bill.
+Click:
 
----
+```
+Proceed to Bill
+```
 
-### 💳 Payment (Simulation)
-
-* Click **“Pay Now”**
-* A **QR code is generated** (demo only).
-* Click **“Confirm Payment (Demo)”** to simulate payment success.
-
-> QR scanning alone does NOT confirm payment — explicit confirmation is required.
+The UI shows the final cart summary.
 
 ---
 
-### 🚪 Exit Gate Verification
+## 💳 Payment Simulation
 
-* Click **“Proceed to Exit Gate”**
-* If payment is completed → Gate opens
-* If payment is not completed → Gate remains locked (violation detected)
+Click:
 
----
+```
+Pay Now
+```
 
-### 🔁 New Session
+A **QR code appears**.
 
-* Click **“New Cart”** to reset the backend cart and start a fresh session.
+Click:
 
----
+```
+Confirm Payment (Demo)
+```
 
-## 🔧 Hardware Integration (Planned)
-
-The system is designed so that **real hardware can be added later** without modifying core logic.
-
-### Planned Setup:
-
-* Load Cell + HX711
-* Arduino / ESP32
-* Serial communication to Python
-
-Only `WeightProvider` needs to be modified to read serial input.
+to simulate successful payment.
 
 ---
 
-## ⚠️ Limitations
+⚠️ QR scan itself **does NOT confirm payment**.
 
-* No real payment gateway integration
+---
+
+## 🚪 Exit Gate
+
+Click:
+
+```
+Proceed to Exit Gate
+```
+
+Behavior:
+
+| Payment Status | Gate   |
+| -------------- | ------ |
+| Paid           | Opens  |
+| Unpaid         | Locked |
+
+---
+
+## 🔁 New Customer
+
+Click:
+
+```
+New Cart
+```
+
+This resets the entire backend cart session.
+
+---
+
+# 🧪 Simulation Mode
+
+This version uses **keyboard input instead of real sensors**.
+
+```
+Weight input → simulated load cell
+Camera → real
+Vision → hint only
+Resolver → weight-dominant
+```
+
+This ensures **predictable demo behavior**.
+
+---
+
+# 🏷 Stable Simulation Checkpoint
+
+A stable simulation version has been tagged.
+
+```
+simulation-stable-v1
+```
+
+This version represents the **fully working simulation pipeline**.
+
+---
+
+## Checkout Stable Demo Version
+
+To restore the stable version:
+
+```
+git checkout simulation-stable-v1
+```
+
+Or create a safe branch:
+
+```
+git checkout -b simulation-stable simulation-stable-v1
+```
+
+This checkpoint ensures the demo can run even if hardware integration fails.
+
+---
+
+# 🔧 Hardware Integration (Future)
+
+The architecture supports real hardware.
+
+Planned hardware:
+
+```
+Load Cell
+HX711 amplifier
+Arduino / ESP32
+Serial communication to Python
+```
+
+Only the module below needs modification:
+
+```
+services/weight_provider.py
+```
+
+All other logic remains unchanged.
+
+---
+
+# ⚠️ Limitations
+
+This is intentionally a **demo prototype**.
+
+Limitations include:
+
+* No real payment gateway
 * No ML-based product recognition
 * No real exit gate hardware
-* Demo-only QR codes
-* Keyboard-simulated weight input
+* QR payment is simulated
+* Weight sensor is simulated via keyboard
 
-These are **intentional design choices** for safety, explainability, and academic scope.
+These choices improve:
 
----
-
-## 📌 Intended Use
-
-* Academic projects
-* System architecture demonstrations
-* Smart retail concept validation
-
-**Not intended for real-world deployment.**
+```
+Demo reliability
+Explainability
+Academic suitability
+```
 
 ---
 
-## 👩‍💻 Author / Maintainer
+# 📌 Intended Use
 
-Developed as a **Smart Cart System demo prototype**
-for academic and demonstration purposes.
+Designed for:
+
+* Academic demonstrations
+* Smart retail concept explanation
+* System architecture validation
+* Computer vision + IoT integration demos
+
+Not intended for production deployment.
+
+---
+
+# 👩‍💻 Author
+
+Developed as a **Smart Cart System demonstration prototype**.
+
+Maintained for academic and concept validation purposes.
 
 ---
