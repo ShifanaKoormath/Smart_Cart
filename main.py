@@ -1,14 +1,24 @@
 import time
 
-from models.cart import Cart
-from services.simulator import simulate_event
-from services.event_handler import handle_event
-from services.product_loader import load_products
-from services.camera_real import capture_and_detect
-from services.product_resolver import resolve_product_by_weight
-from services.vision_mapper import map_color_to_categories
-from services.weight_provider import WeightProvider
-from ui.smart_cart_ui import SmartCartUI
+from config.system_mode import SYSTEM_MODE
+
+from common.models.cart import Cart
+from inputs.simulation.simulator import simulate_event
+
+from common.services.event_handler import handle_event
+from common.services.product_loader import load_products
+from common.services.camera_real import capture_and_detect
+from common.services.product_resolver import resolve_product_by_weight
+from common.services.vision_mapper import map_color_to_categories
+
+from common.ui.smart_cart_ui import SmartCartUI
+
+
+# ---------------- WEIGHT PROVIDER SELECTION ----------------
+if SYSTEM_MODE == "simulation":
+    from inputs.simulation.weight_provider_sim import WeightProvider
+else:
+    from inputs.hardware.weight_provider_serial import WeightProvider
 
 
 # ---------------- DEBUG PRINTER ----------------
@@ -28,6 +38,7 @@ def print_debug_info(
 
     print(f"Weight delta: {weight_delta} g")
     print(f"Detected colors: {detected_colors}")
+
     if aspect_ratio:
         print(f"Aspect ratio: {aspect_ratio:.2f}")
 
@@ -38,10 +49,12 @@ def print_debug_info(
 
     if product:
         diff = abs(product.unit_weight - abs(weight_delta))
+
         print("\nResolver result:")
         print(f"Matched product: {product.name}")
         print(f"Expected weight: {product.unit_weight} g")
         print(f"Weight difference: {diff} g")
+
     else:
         print("\nResolver result: ❌ NO MATCH")
 
@@ -61,10 +74,16 @@ def wait_for_weight_stabilization():
 # ---------------- LOAD SYSTEM ----------------
 products = load_products()
 cart = Cart()
-weight_provider = WeightProvider(use_keyboard=True)
+
+# Initialize weight provider depending on mode
+if SYSTEM_MODE == "hardware":
+    weight_provider = WeightProvider(port="COM4")
+else:
+    weight_provider = WeightProvider()
+
 
 running = True
-
+print(f"Weight provider initialized for {SYSTEM_MODE} mode")
 
 def shutdown_backend():
     """
@@ -89,6 +108,7 @@ def pipeline_step():
     print("\n🔔 Waiting for next cart event...")
 
     try:
+
         if not running:
             return
 
@@ -116,9 +136,9 @@ def pipeline_step():
     ui.update_frame(frame)
 
     # 6️⃣ Vision reject
-    if detected_colors is None:
+    if not detected_colors:
         print("❌ Vision failed to detect color")
-        ui.update_event("REJECT", vision_conf)
+        ui.update_event("REJECT_VISION", vision_conf)
         ui.refresh()
         ui.after(200, pipeline_step)
         return
@@ -134,11 +154,11 @@ def pipeline_step():
 
     candidate_categories = list(set(candidate_categories))
 
-    print(f"Color '{detected_colors}' mapped to categories: {candidate_categories}")
+    print(f"Colors {detected_colors} mapped to categories: {candidate_categories}")
 
     if not candidate_categories:
         print("❌ No matching category")
-        ui.update_event("REJECT", vision_conf)
+        ui.update_event("REJECT_MATCH", vision_conf)
         ui.refresh()
         ui.after(200, pipeline_step)
         return
@@ -155,7 +175,6 @@ def pipeline_step():
             area_ratio
         )
 
-        # Print full pipeline debug
         print_debug_info(
             weight_delta,
             detected_colors,
@@ -172,6 +191,7 @@ def pipeline_step():
             ui.refresh()
             ui.after(200, pipeline_step)
             return
+
         if ui.view_mode != "CART":
             ui.after(200, pipeline_step)
             return
@@ -217,12 +237,12 @@ def pipeline_step():
         ui.update_event("REMOVE", vision_conf, "item")
         ui.refresh()
 
-    # 7️⃣ Schedule next cycle
+    # Schedule next cycle
     ui.after(200, pipeline_step)
 
 
 # ---------------- START SYSTEM ----------------
-print("\n=== SMART CART PIPELINE MODE START ===\n")
+print(f"\n=== SMART CART PIPELINE MODE START ({SYSTEM_MODE.upper()}) ===\n")
 
 ui.after(500, pipeline_step)
 ui.mainloop()
