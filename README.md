@@ -221,9 +221,81 @@ smart_cart_system
 └── README.md
 ```
 
+
+
 ---
 
-# ⚙️ System Modes
+# ⚙️ System Setup
+
+Follow these steps to set up and run the Smart Cart system.
+
+---
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/ShifanaKoormath/Smart_Cart.git
+cd smart_cart_system
+```
+
+---
+
+## 2️⃣ Create a Virtual Environment (Recommended)
+
+Create a local Python environment for the project:
+
+```bash
+python -m venv venv
+```
+
+Activate it:
+
+**Windows**
+
+```bash
+venv\Scripts\activate
+```
+
+**macOS / Linux**
+
+```bash
+source venv/bin/activate
+```
+
+Your terminal should now show:
+
+```
+(venv)
+```
+
+---
+
+## 3️⃣ Install Dependencies
+
+Install all required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+This installs:
+
+* OpenCV (camera processing)
+* NumPy (image operations)
+* Pillow (image utilities)
+* qrcode (payment QR generation)
+* pyserial (hardware serial communication)
+
+---
+
+
+
+
+
+
+---
+
+# ⚙️Select System Modes
 
 The system supports **two operating modes**.
 
