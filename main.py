@@ -77,7 +77,7 @@ cart = Cart()
 
 # Initialize weight provider depending on mode
 if SYSTEM_MODE == "hardware":
-    weight_provider = WeightProvider(port="COM4")
+    weight_provider = WeightProvider(port="COM7")
 else:
     weight_provider = WeightProvider()
 
@@ -114,6 +114,10 @@ def pipeline_step():
 
         # 1️⃣ Weight trigger
         weight_delta = weight_provider.get_next_weight()
+
+        if weight_delta is None:
+            ui.after(200, pipeline_step)
+            return
 
     except StopIteration:
         print("🔚 Weight input ended")

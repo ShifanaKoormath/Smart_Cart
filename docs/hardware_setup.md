@@ -77,7 +77,7 @@ Example:
 
 ```
 COM3
-COM4
+COM7
 ```
 
 ---
@@ -239,7 +239,7 @@ Update to the correct port.
 Example:
 
 ```
-COM4
+COM7
 COM5
 ```
 

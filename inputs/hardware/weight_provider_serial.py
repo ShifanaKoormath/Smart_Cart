@@ -4,7 +4,7 @@ import time
 
 class WeightProvider:
 
-    def __init__(self, port="COM4", baudrate=9600):
+    def __init__(self, port="COM7", baudrate=9600):
 
         print(f"🔌 Connecting to weight sensor on {port}...")
 
@@ -21,6 +21,9 @@ class WeightProvider:
 
             try:
                 line = self.ser.readline().decode(errors="ignore").strip()
+
+                if not line:
+                    return None
 
                 if not line:
                     continue
