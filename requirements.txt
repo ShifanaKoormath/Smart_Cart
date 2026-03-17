@@ -3,3 +3,7 @@ numpy
 Pillow
 qrcode
 pyserial
+scikit-learn 
+pandas 
+matplotlib
+joblib

@@ -1,4 +1,16 @@
-venv/
+# Python
 __pycache__/
 *.pyc
+
+# Virtual env
+venv
+
 last_capture.jpg
+
+# ML artifacts
+ml/knn_model.pkl
+ml/confusion_matrix.png
+
+# OS
+.DS_Store
+Thumbs.db

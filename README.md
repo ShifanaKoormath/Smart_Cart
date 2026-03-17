@@ -10,6 +10,7 @@ The **Smart Cart System** is a **demo-focused smart retail prototype** that auto
 Weight sensing
 Computer vision hints
 Deterministic product resolution
+Lightweight ML tie-breaker (KNN)
 ```
 
 The system continuously detects **product additions and removals**, updates the cart in real time, generates a bill, and enforces **payment verification before exit**.
@@ -33,6 +34,7 @@ This project is designed primarily for:
 * 📷 **Camera-based visual hints**
 * 🎨 **Dominant color extraction**
 * 🧠 **Product resolution using weight + color hints**
+* 🤖 **ML-based ambiguity resolution (KNN tie-breaker)**
 * 🧾 **Real-time cart UI updates**
 * 💳 **QR-based payment simulation**
 * 🚪 **Exit gate payment verification**
@@ -42,7 +44,7 @@ This project is designed primarily for:
 
 # 🧠 Core Design Philosophy
 
-The system intentionally uses a **deterministic hybrid architecture** instead of AI-heavy recognition.
+The system uses a deterministic-first hybrid architecture, with ML introduced only where necessary.
 
 ---
 
@@ -50,6 +52,10 @@ The system intentionally uses a **deterministic hybrid architecture** instead of
 
 ```
 Weight Change
+      ↓
+Primary Filtering
+      ↓
+Candidate Products
       ↓
 Product Resolver
       ↓
@@ -77,16 +83,30 @@ coarse shape hints
 
 These hints **reduce ambiguity** between products.
 
-Example:
 
 ```
-Weight = 120g
-Possible products = [Toothpaste, Biscuit]
+## ML = Controlled Tie-Breaker (New)
 
-Vision detects → blue packaging
-Resolver selects → Toothpaste
-```
+ML is used only when rule-based filtering produces multiple valid candidates.
 
+Multiple Candidates
+        ↓
+KNN Model Prediction
+        ↓
+Confidence Check
+        ↓
+Final Selection / Fallback
+Key Rules:
+
+ML never overrides a strong match
+
+ML only runs when ambiguity exists
+
+A confidence threshold ensures reliability
+
+If confidence is low → system falls back to deterministic choice
+
+This ensures the system remains stable, explainable, and demo-safe
 ---
 
 ## Backend Authority
@@ -136,8 +156,32 @@ Vision Hint Extraction
 Color → Category Mapping
         │
         ▼
-Product Resolution
-(weight + hints)
+Rule-Based Filtering
+(weight + category + vision)
+        │
+        ▼
+Candidate Products
+        │
+        ▼
+Ambiguity Check
+        │
+   ┌────┴────┐
+   ▼         ▼
+Single     Multiple
+Match      Matches
+   │         │
+   ▼         ▼
+Return    ML Tie-Breaker
+              │
+              ▼
+     Confidence Check
+              │
+     ┌────────┴────────┐
+     ▼                 ▼
+ High Confidence   Low Confidence
+     │                 │
+     ▼                 ▼
+  Select           Fallback
         │
         ▼
 Cart Update
@@ -153,22 +197,24 @@ Exit Gate Verification
         │
         ▼
 Session Reset
-```
 
 ---
 
 # 🧩 Technology Stack
 
-| Component     | Technology        |
-| ------------- | ----------------- |
-| Language      | Python 3.9+       |
-| UI            | Tkinter           |
-| Vision        | OpenCV            |
-| QR Code       | qrcode + Pillow   |
-| Data          | JSON catalog      |
-| Hardware      | Load Cell + HX711 |
-| Firmware      | Arduino           |
-| Communication | Serial USB        |
+| Component     | Technology         |
+| ------------- | ------------------ |
+| Language      | Python 3.9+        |
+| UI            | Tkinter            |
+| Vision        | OpenCV             |
+| ML Model      | Scikit-learn (KNN) |
+| Data          | JSON + CSV         |
+| Hardware      | Load Cell + HX711  |
+| Firmware      | Arduino            |
+| Communication | Serial USB         |
+
+
+
 
 ---
 
@@ -207,7 +253,12 @@ smart_cart_system
 │   │
 │   └── hardware
 │       └── weight_provider_serial.py
-│
+├── ml
+│   ├── dataset.csv
+│   ├── train.py
+│   ├── model.py
+│   ├── evaluate.py
+│   └── utils.py
 ├── firmware
 │   └── hx711_reader
 │       └── hx711_reader.ino
@@ -221,7 +272,48 @@ smart_cart_system
 └── README.md
 ```
 
+## ⚙️ ML Setup (New)
 
+# Install ML Dependencies
+
+pip install scikit-learn pandas numpy joblib matplotlib
+
+# Train Model
+python ml/train.py
+
+This generates:
+
+ml/knn_model.pkl
+
+
+# Evaluate Model
+python ml/evaluate.py
+
+Outputs:
+
+Classification report (precision, recall, F1-score)
+
+Confusion matrix image → ml/confusion_matrix.png
+
+# ⚠️ Known Limitations (Updated)
+
+ML is not used for full product recognition
+
+ML works only as a tie-breaker
+
+Small dataset → limited generalization
+
+Vision is coarse (color + shape only)
+
+QR payment is simulated
+
+No real gate hardware
+
+These choices ensure:
+
+System stability
+Explainability
+Reliable demo behavior
 
 ---
 
@@ -620,5 +712,13 @@ It is **not intended for commercial deployment**.
 
 # 👩‍💻 Author
 
-Developed as a **Smart Cart System hybrid simulation + hardware prototype** for academic demonstration and system design validation.
+Developed as a **Smart Cart System hybrid simulation + hardware prototype** combining:
+
+Deterministic system design
+
+Vision-assisted filtering
+
+Lightweight ML-based decision support
+
+for academic demonstration and system validation.
 

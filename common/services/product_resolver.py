@@ -7,12 +7,11 @@ def resolve_product_by_weight(
     area_ratio=None
 ):
     target = abs(weight_delta)
-    tolerance = 5  # small tolerance for demo stability
+    tolerance = 5
 
-    best_product = None
-    smallest_diff = float("inf")
+    candidates = []
 
-    # -------- PRIMARY SEARCH (category + color + weight) --------
+    # -------- PRIMARY FILTER --------
     for product in products.values():
 
         if product.category not in candidate_categories:
@@ -21,7 +20,6 @@ def resolve_product_by_weight(
         if product.unit_weight is None:
             continue
 
-        # palette check
         palette = product.vision_profile.get("dominant_colors", [])
 
         if not any(c in palette for c in detected_colors):
@@ -29,14 +27,13 @@ def resolve_product_by_weight(
 
         diff = abs(product.unit_weight - target)
 
-        if diff <= tolerance and diff < smallest_diff:
-            smallest_diff = diff
-            best_product = product
+        if diff <= tolerance:
+            candidates.append((product, diff))
 
-    # -------- FALLBACK SEARCH (ignore color but keep category) --------
-    if best_product is None:
+    # -------- FALLBACK --------
+    if not candidates:
 
-        print("⚠️ Color mismatch — trying category + weight fallback")
+        print("⚠️ Color mismatch — fallback")
 
         for product in products.values():
 
@@ -45,8 +42,9 @@ def resolve_product_by_weight(
 
             diff = abs(product.unit_weight - target)
 
-            if diff <= tolerance and diff < smallest_diff:
-                smallest_diff = diff
-                best_product = product
+            if diff <= tolerance:
+                candidates.append((product, diff))
 
-    return best_product
+    candidates.sort(key=lambda x: x[1])
+
+    return [c[0] for c in candidates]

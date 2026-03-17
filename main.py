@@ -1,5 +1,6 @@
 import time
-
+from ml.utils import extract_ml_features
+from ml.model import ProductMLModel
 from config.system_mode import SYSTEM_MODE
 
 from common.models.cart import Cart
@@ -21,6 +22,8 @@ else:
     from inputs.hardware.weight_provider_serial import WeightProvider
 
 
+ml_model = ProductMLModel()
+ml_model.load()
 # ---------------- DEBUG PRINTER ----------------
 def print_debug_info(
     weight_delta,
@@ -170,7 +173,7 @@ def pipeline_step():
     # ---------------- ADD FLOW ----------------
     if event_type == "ADD":
 
-        product = resolve_product_by_weight(
+        candidates = resolve_product_by_weight(
             products,
             candidate_categories,
             weight_delta,
@@ -179,6 +182,34 @@ def pipeline_step():
             area_ratio
         )
 
+        # -------- DECISION LAYER --------
+
+        if not candidates:
+            product = None
+
+        elif len(candidates) == 1:
+            product = candidates[0]
+
+        else:
+            features = extract_ml_features(
+                weight=abs(weight_delta),
+                aspect_ratio=aspect_ratio,
+                area_ratio=area_ratio,
+                dominant_color=detected_colors[0] if detected_colors else None
+            )
+
+            pred_id, confidence = ml_model.predict(features)
+
+            if confidence > 0.7:
+                for c in candidates:
+                    if c.id == pred_id:
+                        product = c
+                        break
+                else:
+                    product = candidates[0]
+            else:
+                product = candidates[0]
+        print("Candidates:", [c.id for c in candidates])
         print_debug_info(
             weight_delta,
             detected_colors,
